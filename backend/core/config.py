@@ -5,7 +5,7 @@ from pathlib import Path
 # load_dotenv() with no args relies on caller-frame inspection that can fail
 # silently under uvicorn reload, leaving env vars unset.
 try:
-    from dotenv import load_dotenv
+    from dotenv import load_dotenv  # type: ignore
     _ENV_PATH = Path(__file__).resolve().parents[2] / '.env'
     load_dotenv(_ENV_PATH)
 except ImportError:
