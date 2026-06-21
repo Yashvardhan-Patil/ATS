@@ -20,6 +20,7 @@ ALLOWED_ORIGINS = [
     'http://localhost:8501',               # local dev
     # After deploying frontend, add your Streamlit URL here:
     # 'https://your-app.streamlit.app',
+    https://49tethsm4v5te9uw8hpvtj.streamlit.app/
 ]
 
 #file 
