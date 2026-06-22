@@ -1,4 +1,7 @@
 import logging
+import asyncio
+import httpx
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,10 +30,25 @@ def _get_embedder():
     from sentence_transformers import SentenceTransformer
     return SentenceTransformer(SENTENCE_TRANSFORMER_MODEL)
 
+async def _keep_alive():
+    url = os.getenv('RENDER_EXTERNAL_URL', '')
+    if not url:
+        return
+    await asyncio.sleep(60)
+    async with httpx.AsyncClient() as client:
+        while True:
+            try:
+                await client.get(f'{url}/api/v1/health', timeout=10)
+                logger.info('keep-alive ping sent')
+            except Exception:
+                pass
+            await asyncio.sleep(600)  # ping every 10 minutes
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.nlp     = None
+    app.state.nlp      = None
     app.state.embedder = None
+    asyncio.create_task(_keep_alive())
     logger.info('API started — models will load on first request')
     yield
     logger.info('Shutting down the API')
