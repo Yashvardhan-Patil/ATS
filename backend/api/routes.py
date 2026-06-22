@@ -30,13 +30,7 @@ async def analyze_resume(
     warnings: List[str] = []
 
 
-    nlp      = request.app.state.nlp
     embedder = request.app.state.embedder
-
-    if nlp is None:
-        from backend.main import _get_nlp
-        request.app.state.nlp = _get_nlp()
-        nlp = request.app.state.nlp
 
     if embedder is None:
         from backend.main import _get_embedder
@@ -70,7 +64,6 @@ async def analyze_resume(
         
         result = analyze_full_resume(
             resume_text=resume_text,
-            nlp=nlp,
             embedder=embedder,
             job_description=job_description
         )

@@ -1,13 +1,7 @@
+import re
 from typing import List, Dict
 import numpy as np
-import spacy
 from sentence_transformers import SentenceTransformer
-
-from typing import List, Dict
-import numpy as np
-import spacy
-from sentence_transformers import SentenceTransformer
-
 from backend.utils.matching import fuzzy_match_keywords, normalize_skill
 from rapidfuzz import fuzz
 
@@ -40,21 +34,12 @@ def identify_missing_keywords(
 
 
 def analyze_skills_gap(
-    resume_skills: List[str], jd_text: str, nlp: spacy.Language
+    resume_skills: List[str], jd_text: str
 ) -> List[str]:
-    doc       = nlp(jd_text[:5000])
-    jd_skills = set()
+    # extract candidate skills using regex — no spaCy needed
+    words   = re.findall(r'[A-Za-z][A-Za-z0-9+#.]*(?:\s[A-Za-z][A-Za-z0-9+#.]*){0,3}', jd_text[:5000])
+    jd_skills = {w.lower().strip() for w in words if 1 <= len(w.split()) <= 4}
 
-    for ent in doc.ents:
-        if ent.label_ in ['PRODUCT', 'ORG', 'LANGUAGE']:
-            jd_skills.add(ent.text.lower())
-
-    for chunk in doc.noun_chunks:
-        ct = chunk.text.lower().strip()
-        if 1 <= len(ct.split()) <= 4:
-            jd_skills.add(ct)
-
-    # Normalize resume skills for comparison
     resume_normalized = {normalize_skill(s) for s in resume_skills}
 
     gap = []
@@ -96,12 +81,12 @@ def compare_resume_with_jd(
     jd_text: str,
     jd_keywords: List[str],
     embedder: SentenceTransformer,
-    nlp: spacy.Language,
+    nlp=None,
 ) -> Dict:
     semantic_similarity = calculate_semantic_similarity(resume_text, jd_text, embedder)
     matched_keywords    = identify_matched_keywords(resume_keywords, jd_keywords)
     missing_keywords    = identify_missing_keywords(resume_keywords, jd_keywords)
-    skills_gap          = analyze_skills_gap(resume_skills, jd_text, nlp)
+    skills_gap          = analyze_skills_gap(resume_skills, jd_text)
     match_percentage    = calculate_match_percentage(
         resume_keywords, jd_keywords, semantic_similarity
     )

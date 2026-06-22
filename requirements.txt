@@ -18,7 +18,6 @@ python-multipart>=0.0.9      # required by FastAPI for File/Form uploads
 python-dotenv>=1.0
 
 # ── Backend: NLP / ML ──
-spacy>=3.7,<4.0
 sentence-transformers>=2.5
 numpy>=1.26
 rapidfuzz>=3.6

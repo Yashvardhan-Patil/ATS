@@ -7,24 +7,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.core.config import(
-    ALLOWED_ORIGINS, 
-    APP_DESCRIPTION, 
-    APP_TITLE, 
-    APP_VERSION, 
-    SPACY_MODEL_PRIMARY, 
-    SPACY_MODEL_SECONDARY, SENTENCE_TRANSFORMER_MODEL
+    ALLOWED_ORIGINS,
+    APP_DESCRIPTION,
+    APP_TITLE,
+    APP_VERSION,
+    SENTENCE_TRANSFORMER_MODEL
 )
 from backend.api.routes import router
 
-logger=logging.getLogger('ats_resume_scorer')
-
-def _get_nlp():
-    import spacy
-    try:
-        return spacy.load(SPACY_MODEL_PRIMARY)
-    except OSError:
-        logger.warning(f'{SPACY_MODEL_PRIMARY} not found — falling back to {SPACY_MODEL_SECONDARY}')
-        return spacy.load(SPACY_MODEL_SECONDARY)
+logger = logging.getLogger('ats_resume_scorer')
 
 def _get_embedder():
     from sentence_transformers import SentenceTransformer
@@ -42,7 +33,7 @@ async def _keep_alive():
                 logger.info('keep-alive ping sent')
             except Exception:
                 pass
-            await asyncio.sleep(600)  # ping every 10 minutes
+            await asyncio.sleep(600)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -53,22 +44,21 @@ async def lifespan(app: FastAPI):
     yield
     logger.info('Shutting down the API')
 
-app=FastAPI(
-    title=APP_TITLE, 
-    description=APP_DESCRIPTION, 
-    version=APP_VERSION, 
+app = FastAPI(
+    title=APP_TITLE,
+    description=APP_DESCRIPTION,
+    version=APP_VERSION,
     lifespan=lifespan,
     docs_url='/docs',
     redoc_url='/redoc'
 )
 
 app.add_middleware(
-    CORSMiddleware, 
+    CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True, 
-    allow_methods     = ['*'],
-    allow_headers     = ['*'],
-
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
 app.include_router(router)
@@ -87,11 +77,11 @@ async def root():
         },
     }
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import uvicorn
     uvicorn.run(
         'backend.main:app',
-        host    = '0.0.0.0',
-        port    = 8000,
-        reload  = True,    # Auto-restart on code changes (dev only)
+        host   = '0.0.0.0',
+        port   = 8000,
+        reload = True,
     )
