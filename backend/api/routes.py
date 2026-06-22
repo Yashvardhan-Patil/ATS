@@ -33,6 +33,16 @@ async def analyze_resume(
     nlp      = request.app.state.nlp
     embedder = request.app.state.embedder
 
+    if nlp is None:
+        from backend.main import _get_nlp
+        request.app.state.nlp = _get_nlp()
+        nlp = request.app.state.nlp
+
+    if embedder is None:
+        from backend.main import _get_embedder
+        request.app.state.embedder = _get_embedder()
+        embedder = request.app.state.embedder
+
 
     try:
         file_bytes = await resume.read()
@@ -123,7 +133,6 @@ async def analyze_resume(
 
 @router.get('/health')
 async def health_check(request: Request):
-    """Health check — confirms models are loaded and the API is ready."""
     return {
         'status':          'healthy',
         'nlp_loaded':      request.app.state.nlp is not None,
